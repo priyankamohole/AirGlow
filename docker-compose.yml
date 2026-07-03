@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  gateway_service:
+    build:
+      context: ./gateway_service
+      dockerfile: Dockerfile
+    container_name: airglow_gateway_service
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - auth_service
+
+  auth_service:
+    build:
+      context: ./auth_service
+      dockerfile: Dockerfile
+    container_name: airglow_auth_service
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    volumes:
+      - ./auth_service:/app
