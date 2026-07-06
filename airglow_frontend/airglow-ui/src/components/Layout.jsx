@@ -3,13 +3,18 @@ import Navbar from "./Navbar";
 
 export default function Layout({ children }) {
   return (
-    <div className="flex">
+    <div className="flex h-screen">
+      {/* Fixed Sidebar */}
       <Sidebar />
 
-      <div className="flex-1">
+      {/* Main Section */}
+      <div className="flex flex-col flex-1 overflow-hidden">
         <Navbar />
 
-        <div className="p-6 bg-gray-100 min-h-screen">{children}</div>
+        {/* Only this part scrolls */}
+        <main className="flex-1 overflow-y-auto bg-gray-100 p-6">
+          {children}
+        </main>
       </div>
     </div>
   );

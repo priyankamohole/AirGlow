@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function Sidebar() {
   return (
-    <div className="w-64 bg-gray-900 text-white h-screen">
+    <div className="bg-slate-900 text-white w-64 min-h-screen sticky top-0">
       <h2 className="text-2xl font-bold p-6">AirGlow</h2>
 
       <ul>
