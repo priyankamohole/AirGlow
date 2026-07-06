@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   gateway_service:
     build:
@@ -11,6 +9,9 @@ services:
     restart: unless-stopped
     depends_on:
       - auth_service
+      - dag_crud
+    networks:
+      - airglow_network
 
   auth_service:
     build:
@@ -24,3 +25,24 @@ services:
     restart: unless-stopped
     volumes:
       - ./auth_service:/app
+    networks:
+      - airglow_network
+
+  dag_crud:
+    build:
+      context: ./dag_crud
+      dockerfile: Dockerfile
+    container_name: airglow_dag_crud
+    env_file:
+      - .env
+    ports:
+      - "8001:8000"
+    restart: unless-stopped
+    volumes:
+      - ./dag_crud:/app
+    networks:
+      - airglow_network
+
+networks:
+  airglow_network:
+    driver: bridge

@@ -23,10 +23,12 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Login button clicked");
     try {
       setLoading(true);
+      console.log("Calling API...");
       await login(form);
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
     } finally {
@@ -52,7 +54,10 @@ export default function Login() {
             name="password"
             onChange={handleChange}
           />
-          <button className="bg-blue-500 text-white p-3 rounded w-full hover:bg-blue-700 transition-colors">
+          <button
+            type="submit"
+            className="bg-blue-500 text-white p-3 rounded w-full hover:bg-blue-700 transition-colors"
+          >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>

@@ -38,7 +38,7 @@ async def register(user:schema.UserCreate,db=Depends(get_db)):
 
 #authentication
 @router.post("/login")
-async def login(user:schema.UserCreate, db=Depends(get_db)):
+async def login(user:schema.UserLogin, db=Depends(get_db)):
     db_user=db.query(models.User).filter(models.User.username==user.username).first()
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid Credentials")

@@ -5,13 +5,18 @@ class UserCreate(BaseModel):   #Request Schema register
     password:str
     email:str
 
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
 class UserResponse(BaseModel):  #Response Schema login
     id:int
     username:str
     email:str
+
     
     class Config:
-        orm_mode = True
+        from_attributes = True
   
 
   

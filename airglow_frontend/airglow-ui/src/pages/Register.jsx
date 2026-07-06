@@ -21,6 +21,7 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Register button clicked");
     try {
       setLoading(true);
       await api.post("/register", form);
@@ -64,7 +65,10 @@ export default function Register() {
             onChange={handleChange}
           />
 
-          <button className="bg-green-600 text-white w-full p-3 rounded hover:bg-green-700">
+          <button
+            type="submit"
+            className="bg-green-600 text-white w-full p-3 rounded hover:bg-green-700"
+          >
             {loading ? "Registering..." : "Register"}
           </button>
         </form>

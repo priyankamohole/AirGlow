@@ -1,13 +1,20 @@
 import { createContext, useState } from "react";
+import api from "../utils/axios";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
 
-  const login = (jwt) => {
+  const login = async (credentials) => {
+    const response = await api.post("/auth/login", credentials);
+    console.log(response.data);
+    const jwt = response.data.access_token;
+
     localStorage.setItem("token", jwt);
     setToken(jwt);
+
+    return response.data;
   };
 
   const logout = () => {

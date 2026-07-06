@@ -2,8 +2,6 @@ from fastapi import FastAPI
 from app.api.routes import router
 from app.db.database import engine, Base
 import app.models.user as models
-from starlette.middleware.sessions import SessionMiddleware
-import os
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -23,7 +21,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
     # SessionMiddleware,
-    secret_key=os.getenv("SECRET_KEY")
+    # secret_key=os.getenv("SECRET_KEY")
 )
 
 app.include_router(router)
