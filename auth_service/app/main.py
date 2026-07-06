@@ -4,6 +4,7 @@ from app.db.database import engine, Base
 import app.models.user as models
 from starlette.middleware.sessions import SessionMiddleware
 import os
+from fastapi.middleware.cors import CORSMiddleware
 
 
 Base.metadata.create_all(bind=engine)
@@ -11,8 +12,17 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(root_path="/auth")
 
+origins = [
+    "http://localhost:5173",
+]
+
 app.add_middleware(
-    SessionMiddleware,
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    # SessionMiddleware,
     secret_key=os.getenv("SECRET_KEY")
 )
 

@@ -23,7 +23,7 @@ export default function Register() {
     e.preventDefault();
     try {
       setLoading(true);
-      await api.post("/auth/register", form);
+      await api.post("/register", form);
       navigate("/");
     } catch (error) {
       console.log(error);
