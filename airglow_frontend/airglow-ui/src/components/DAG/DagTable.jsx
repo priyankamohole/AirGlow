@@ -67,7 +67,7 @@ export default function DagTable({ dags, onDelete, onRun }) {
                   {/* View */}
 
                   <button
-                    onClick={() => navigate(`/pipelines/${dag.id}`)}
+                    onClick={() => navigate(`/dags/${dag.id}`)}
                     className="text-blue-600 hover:text-blue-800"
                   >
                     <FaEye size={18} />
@@ -76,7 +76,7 @@ export default function DagTable({ dags, onDelete, onRun }) {
                   {/* Edit */}
 
                   <button
-                    onClick={() => navigate(`/pipelines/edit/${dag.id}`)}
+                    onClick={() => navigate(`/dags/edit/${dag.id}`)}
                     className="text-green-600 hover:text-green-800"
                   >
                     <FaEdit size={18} />

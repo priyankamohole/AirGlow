@@ -45,7 +45,7 @@ export default function DagCard({ dag, onDelete, onRun }) {
         </button>
 
         <button
-          onClick={() => navigate(`/pipelines/edit/${dag.id}`)}
+          onClick={() => navigate(`/dags/edit/${dag.id}`)}
           className="bg-blue-600 text-white p-2 rounded"
         >
           <FaEdit />

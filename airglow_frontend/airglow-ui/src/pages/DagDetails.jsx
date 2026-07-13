@@ -40,7 +40,7 @@ export default function DagDetails() {
   const handleDelete = async () => {
     try {
       await dagService.deleteDag(id);
-      navigate("/pipelines");
+      navigate("/dags");
     } catch (err) {
       console.error(err);
       alert("Unable to delete pipeline.");

@@ -11,7 +11,7 @@ export default function CreateDag() {
 
       alert("Pipeline Created Successfully");
 
-      navigate("/pipelines");
+      navigate("/dags");
     } catch (error) {
       console.error(error);
 

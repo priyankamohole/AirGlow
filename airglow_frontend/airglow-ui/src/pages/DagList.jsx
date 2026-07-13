@@ -6,7 +6,7 @@ import useDags from "../hooks/useDags";
 import DagTable from "../components/DAG/DagTable";
 import DagFilters from "../components/DAG/DagFilters";
 import EmptyState from "../components/DAG/EmptyState";
-import Loader from "../components/Dashboard/Loader";
+import Loader from "../components/Loader";
 
 export default function DagList() {
   const navigate = useNavigate();
@@ -44,7 +44,7 @@ export default function DagList() {
         </div>
 
         <button
-          onClick={() => navigate("/pipelines/create")}
+          onClick={() => navigate("/dags/create")}
           className="bg-blue-600 text-white px-5 py-3 rounded-lg"
         >
           <FaPlus className="inline mr-2" />

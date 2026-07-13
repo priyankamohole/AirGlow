@@ -32,7 +32,7 @@ export default function EditDag() {
 
       alert("Pipeline Updated Successfully");
 
-      navigate("/pipelines");
+      navigate("/dags");
     } catch (err) {
       console.error(err);
       alert("Unable to update pipeline");

@@ -5,7 +5,7 @@ const runService = {
 
   getRun: (id) => api.get(`/runs/${id}`),
 
-  triggerRun: (pipelineId) => api.post(`/pipelines/${pipelineId}/run`),
+  triggerRun: (dagId) => api.post(`/dags/${dagId}/run`),
 
   getLogs: (id) => api.get(`/runs/${id}/logs`),
 

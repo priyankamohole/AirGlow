@@ -2,27 +2,27 @@ import api from "../utils/axios";
 
 const dagService = {
   getAllDags() {
-    return api.get("/pipelines");
+    return api.get("/dags/");
   },
 
   getDag(id) {
-    return api.get(`/pipelines/${id}`);
+    return api.get(`/dags/${id}`);
   },
 
   createDag(data) {
-    return api.post("/pipelines", data);
+    return api.post("/dags/", data);
   },
 
   updateDag(id, data) {
-    return api.put(`/pipelines/${id}`, data);
+    return api.put(`/dags/${id}`, data);
   },
 
   deleteDag(id) {
-    return api.delete(`/pipelines/${id}`);
+    return api.delete(`/dags/${id}`);
   },
 
   runDag(id) {
-    return api.post(`/pipelines/${id}/run`);
+    return api.post(`/dags/${id}/run`);
   },
 };
 

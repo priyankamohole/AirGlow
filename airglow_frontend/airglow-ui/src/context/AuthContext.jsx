@@ -8,9 +8,10 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     const response = await api.post("/auth/login", credentials);
-    console.log(response.data);
+
     const jwt = response.data.access_token;
 
+    // Save the JWT, not the old state
     localStorage.setItem("token", jwt);
     setToken(jwt);
 
@@ -23,13 +24,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        token,
-        login,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -27,7 +27,7 @@ function App() {
         }
       />
       <Route
-        path="/pipelines"
+        path="/dags"
         element={
           <ProtectedRoute>
             <Layout>
@@ -38,7 +38,7 @@ function App() {
       />
 
       <Route
-        path="/pipelines/create"
+        path="/dags/create"
         element={
           <ProtectedRoute>
             <Layout>
@@ -49,7 +49,7 @@ function App() {
       />
 
       <Route
-        path="/pipelines/edit/:id"
+        path="/dags/edit/:id"
         element={
           <ProtectedRoute>
             <Layout>
@@ -60,7 +60,7 @@ function App() {
       />
 
       <Route
-        path="/pipelines/:id"
+        path="/dags/:id"
         element={
           <ProtectedRoute>
             <Layout>
@@ -71,7 +71,7 @@ function App() {
       />
 
       <Route
-        path="/pipelines/:id"
+        path="/dags/:id"
         element={
           <ProtectedRoute>
             <Layout>
