@@ -24,17 +24,43 @@ def get_db():
         db.close()
 
 @router.post("/register", response_model=schema.UserResponse)
-async def register(user:schema.UserCreate,db=Depends(get_db)):
-    new_user=models.User(
+async def register(user: schema.UserCreate, db=Depends(get_db)):
+
+    existing_user = (
+        db.query(models.User)
+        .filter(models.User.email == user.email)
+        .first()
+    )
+
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
+
+    existing_username = (
+        db.query(models.User)
+        .filter(models.User.username == user.username)
+        .first()
+    )
+
+    if existing_username:
+        raise HTTPException(
+            status_code=400,
+            detail="Username already exists"
+        )
+
+    new_user = models.User(
         username=user.username,
         email=user.email,
         hashed_password=hash_password(user.password)
     )
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return new_user
 
+    return new_user
 
 #authentication
 @router.post("/login")
