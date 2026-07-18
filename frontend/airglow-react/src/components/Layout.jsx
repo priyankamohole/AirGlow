@@ -1,37 +1,44 @@
-import { Outlet, useLocation, useParams } from 'react-router-dom'
-import Sidebar from './Sidebar.jsx'
-import Topbar from './Topbar.jsx'
+import { Outlet } from "react-router-dom";
+import { useState } from "react";
 
-const titles = {
-  dashboard: 'Dashboard',
-  dags: 'DAGs',
-  'dags/new': 'Create new DAG',
-  runs: 'Runs',
-  webhooks: 'Webhooks',
-  schedules: 'Schedules',
-  outputs: 'Outputs',
-  users: 'Users',
-  settings: 'Settings',
-  documentation: 'Documentation'
-}
+import Sidebar from "./Sidebar";
+import Header from "./Header";
 
 export default function Layout() {
-  const location = useLocation()
-  const params = useParams()
-  const segment = location.pathname.replace('/app/', '')
-
-  let title = titles[segment]
-  if (!title && segment.startsWith('dags/new')) title = 'Create new DAG'
-  if (!title && params.id) title = 'Run details'
-  if (!title) title = 'AirGlow'
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <div className="main">
-        <Topbar title={title} />
-        <Outlet />
+    <div className="bg-gray-100 min-h-screen">
+      {/* Desktop Sidebar */}
+
+      <div className="hidden lg:block">
+        <Sidebar />
+      </div>
+
+      {/* Mobile Sidebar */}
+
+      {sidebarOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 z-40"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+
+          <div className="fixed left-0 top-0 z-50">
+            <Sidebar />
+          </div>
+        </>
+      )}
+
+      {/* Content */}
+
+      <div className="lg:ml-72">
+        <Header setSidebarOpen={setSidebarOpen} />
+
+        <main className="p-6">
+          <Outlet />
+        </main>
       </div>
     </div>
-  )
+  );
 }

@@ -1,137 +1,270 @@
-import { Link } from 'react-router-dom'
-import Badge from '../components/Badge.jsx'
-import { navIcons } from '../components/icons.jsx'
-import { runsData } from '../data/mockData.js'
-
-const statIcons = {
-  blue: navIcons.dags,
-  green: (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M20 6 9 17l-5-5" />
-    </svg>
-  ),
-  red: (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M6 6l12 12M18 6 6 18" />
-    </svg>
-  ),
-  amber: (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <rect x="4" y="4" width="16" height="16" rx="2" /><path d="M4 9h16" />
-    </svg>
-  )
-}
+import { Link } from "react-router-dom";
+import Badge from "../components/Badge";
 
 const stats = [
-  { label: 'Total DAGs', value: '24', delta: '+3 this week', dir: 'up', color: 'blue' },
-  { label: 'Successful runs', value: '152', delta: '+18 this week', dir: 'up', color: 'green' },
-  { label: 'Failed runs', value: '6', delta: '-2 this week', dir: 'down', color: 'red' },
-  { label: 'Total records', value: '15.6K', delta: '+2.4K this week', dir: 'up', color: 'amber' }
-]
+  {
+    title: "Total DAGs",
+    value: "24",
+    change: "+3 this week",
+    color: "bg-blue-100 text-blue-600",
+  },
+  {
+    title: "Successful Runs",
+    value: "152",
+    change: "+18 this week",
+    color: "bg-green-100 text-green-600",
+  },
+  {
+    title: "Failed Runs",
+    value: "6",
+    change: "-2 this week",
+    color: "bg-red-100 text-red-600",
+  },
+  {
+    title: "Total Records",
+    value: "15.6K",
+    change: "+2.4K this week",
+    color: "bg-yellow-100 text-yellow-600",
+  },
+];
 
-const health = ['API gateway', 'Database', 'Redis', 'Celery workers', 'Celery beat']
+const recentRuns = [
+  {
+    id: 909,
+    dag: "Daily Users Pipeline",
+    status: "Success",
+    start: "May 18, 10:30 AM",
+    duration: "12.3s",
+    records: 1245,
+  },
+  {
+    id: 908,
+    dag: "Orders ETL",
+    status: "Success",
+    start: "May 18, 09:15 AM",
+    duration: "18.7s",
+    records: 2341,
+  },
+  {
+    id: 907,
+    dag: "Products Pipeline",
+    status: "Failed",
+    start: "May 18, 08:20 AM",
+    duration: "--",
+    records: 0,
+  },
+  {
+    id: 906,
+    dag: "Inventory Sync",
+    status: "Success",
+    start: "May 17, 11:45 PM",
+    duration: "9.2s",
+    records: 632,
+  },
+];
+
+const health = [
+  "API Gateway",
+  "Database",
+  "Redis",
+  "Celery Workers",
+  "Celery Beat",
+];
 
 export default function Dashboard() {
   return (
-    <div className="page">
-      <div className="stat-grid">
-        {stats.map(s => (
-          <div className="stat-card" key={s.label}>
-            <div className="stat-top">
-              <div className={`stat-icon ${s.color}`}>{statIcons[s.color]}</div>
-              <span className="stat-label">{s.label}</span>
+    <div className="min-h-screen bg-slate-100 p-6">
+      {/* Heading */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-800">Dashboard</h1>
+        <p className="text-gray-500 mt-1">Monitor your AirGlow pipelines</p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        {stats.map((item) => (
+          <div
+            key={item.title}
+            className="rounded-xl bg-white shadow-sm p-6 border"
+          >
+            <div
+              className={`w-12 h-12 rounded-lg flex items-center justify-center ${item.color}`}
+            >
+              📊
             </div>
-            <div className="stat-value">{s.value}</div>
-            <div className={`stat-delta ${s.dir}`}>{s.delta}</div>
+
+            <p className="mt-4 text-gray-500">{item.title}</p>
+
+            <h2 className="text-4xl font-bold mt-2">{item.value}</h2>
+
+            <p className="text-green-600 mt-2 text-sm">{item.change}</p>
           </div>
         ))}
       </div>
 
-      <div className="grid-2">
-        <div className="card">
-          <div className="card-head">
-            <h3>Runs overview</h3>
-            <div className="legend-row">
-              <span><span className="legend-dot" style={{ background: 'var(--green)' }}></span>Successful</span>
-              <span><span className="legend-dot" style={{ background: 'var(--red)' }}></span>Failed</span>
+      {/* Charts */}
+      <div className="grid xl:grid-cols-3 gap-6 mt-8">
+        {/* Line Chart */}
+        <div className="xl:col-span-2 bg-white rounded-xl shadow-sm border p-6">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="text-xl font-semibold">Runs Overview</h2>
+
+            <div className="flex gap-6 text-sm">
+              <span className="text-green-600">● Successful</span>
+              <span className="text-red-500">● Failed</span>
             </div>
           </div>
-          <svg viewBox="0 0 640 220" width="100%" height="220">
-            <line x1="30" y1="10" x2="30" y2="180" stroke="#e6e8ee" />
-            <line x1="30" y1="180" x2="630" y2="180" stroke="#e6e8ee" />
-            <text x="6" y="14" fontSize="11" fill="#98a2b3">40</text>
-            <text x="6" y="57" fontSize="11" fill="#98a2b3">30</text>
-            <text x="6" y="100" fontSize="11" fill="#98a2b3">20</text>
-            <text x="6" y="143" fontSize="11" fill="#98a2b3">10</text>
-            <text x="10" y="184" fontSize="11" fill="#98a2b3">0</text>
-            <polyline fill="none" stroke="var(--green)" strokeWidth="2.5" points="30,110 130,140 230,95 330,120 430,70 530,90 620,60" />
-            <polyline fill="none" stroke="var(--red)" strokeWidth="2.5" points="30,168 130,158 230,170 330,150 430,163 530,155 620,165" />
-            <text x="30" y="200" fontSize="11" fill="#98a2b3">May 12</text>
-            <text x="130" y="200" fontSize="11" fill="#98a2b3">May 13</text>
-            <text x="230" y="200" fontSize="11" fill="#98a2b3">May 14</text>
-            <text x="330" y="200" fontSize="11" fill="#98a2b3">May 15</text>
-            <text x="430" y="200" fontSize="11" fill="#98a2b3">May 16</text>
-            <text x="530" y="200" fontSize="11" fill="#98a2b3">May 17</text>
-            <text x="595" y="200" fontSize="11" fill="#98a2b3">May 18</text>
+
+          <svg viewBox="0 0 640 220" className="w-full h-64">
+            <line x1="30" y1="10" x2="30" y2="180" stroke="#ddd" />
+            <line x1="30" y1="180" x2="630" y2="180" stroke="#ddd" />
+
+            <polyline
+              fill="none"
+              stroke="#16a34a"
+              strokeWidth="3"
+              points="30,110 130,140 230,95 330,120 430,70 530,90 620,60"
+            />
+
+            <polyline
+              fill="none"
+              stroke="#ef4444"
+              strokeWidth="3"
+              points="30,168 130,158 230,170 330,150 430,163 530,155 620,165"
+            />
           </svg>
         </div>
 
-        <div className="card">
-          <div className="card-head"><h3>Runs by status</h3></div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            <svg width="120" height="120" viewBox="0 0 42 42">
-              <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#f2f4f7" strokeWidth="6"></circle>
-              <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#12b76a" strokeWidth="6" strokeDasharray="92 100" strokeDashoffset="25"></circle>
-              <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#f04438" strokeWidth="6" strokeDasharray="4 100" strokeDashoffset="-67"></circle>
-              <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#98a2b3" strokeWidth="6" strokeDasharray="4 100" strokeDashoffset="-71"></circle>
+        {/* Pie */}
+        <div className="bg-white rounded-xl shadow-sm border p-6">
+          <h2 className="text-xl font-semibold mb-5">Runs By Status</h2>
+
+          <div className="flex flex-col items-center">
+            <svg width="180" height="180" viewBox="0 0 42 42">
+              <circle
+                cx="21"
+                cy="21"
+                r="15.9"
+                fill="transparent"
+                stroke="#E5E7EB"
+                strokeWidth="4"
+              />
+
+              <circle
+                cx="21"
+                cy="21"
+                r="15.9"
+                fill="transparent"
+                stroke="#16A34A"
+                strokeWidth="4"
+                strokeDasharray="92 100"
+                strokeDashoffset="25"
+              />
+
+              <circle
+                cx="21"
+                cy="21"
+                r="15.9"
+                fill="transparent"
+                stroke="#EF4444"
+                strokeWidth="4"
+                strokeDasharray="4 100"
+                strokeDashoffset="-67"
+              />
+
+              <circle
+                cx="21"
+                cy="21"
+                r="15.9"
+                fill="transparent"
+                stroke="#94A3B8"
+                strokeWidth="4"
+                strokeDasharray="4 100"
+                strokeDashoffset="-71"
+              />
             </svg>
-            <div style={{ fontSize: 13, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <span><span className="legend-dot" style={{ background: 'var(--green)' }}></span> Success &nbsp;152 (92%)</span>
-              <span><span className="legend-dot" style={{ background: 'var(--red)' }}></span> Failed &nbsp;6 (4%)</span>
-              <span><span className="legend-dot" style={{ background: '#98a2b3' }}></span> Running &nbsp;7 (4%)</span>
+
+            <div className="mt-6 space-y-3 text-sm">
+              <p className="text-green-600">● Success (92%)</p>
+
+              <p className="text-red-500">● Failed (4%)</p>
+
+              <p className="text-gray-500">● Running (4%)</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid-2">
-        <div className="card">
-          <div className="card-head">
-            <h3>Recent runs</h3>
-            <Link to="/app/runs">View all runs &rarr;</Link>
+      {/* Bottom Section */}
+      <div className="grid xl:grid-cols-3 gap-6 mt-8">
+        {/* Table */}
+        <div className="xl:col-span-2 bg-white rounded-xl shadow-sm border overflow-hidden">
+          <div className="flex justify-between items-center p-6 border-b">
+            <h2 className="text-xl font-semibold">Recent Runs</h2>
+
+            <Link to="/app/runs" className="text-blue-600 hover:underline">
+              View All
+            </Link>
           </div>
-          <table>
-            <thead>
-              <tr><th>Run ID</th><th>DAG name</th><th>Status</th><th>Start time</th><th>Duration</th><th>Records</th></tr>
-            </thead>
-            <tbody>
-              {runsData.map(r => (
-                <tr key={r.id} className="link-row">
-                  <td><Link to={`/app/runs/${r.id}`}>{r.id}</Link></td>
-                  <td>{r.dag}</td>
-                  <td><Badge status={r.status} /></td>
-                  <td>{r.start}</td>
-                  <td>{r.duration}</td>
-                  <td>{r.records}</td>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-4 text-left">Run ID</th>
+                  <th className="px-6 py-4 text-left">DAG</th>
+                  <th className="px-6 py-4 text-left">Status</th>
+                  <th className="px-6 py-4 text-left">Start</th>
+                  <th className="px-6 py-4 text-left">Duration</th>
+                  <th className="px-6 py-4 text-left">Records</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody>
+                {recentRuns.map((run) => (
+                  <tr key={run.id} className="border-t hover:bg-gray-50">
+                    <td className="px-6 py-4 font-medium">{run.id}</td>
+
+                    <td className="px-6 py-4">{run.dag}</td>
+
+                    <td className="px-6 py-4">
+                      <Badge status={run.status} />
+                    </td>
+
+                    <td className="px-6 py-4">{run.start}</td>
+
+                    <td className="px-6 py-4">{run.duration}</td>
+
+                    <td className="px-6 py-4">{run.records}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div className="card">
-          <div className="card-head"><h3>System health</h3></div>
-          <div className="health-list">
-            {health.map(h => (
-              <div className="health-item" key={h}>
-                <div className="health-left"><span className="health-dot"></span>{h}</div>
-                <span className="health-status">Healthy</span>
+        {/* Health */}
+        <div className="bg-white rounded-xl shadow-sm border p-6">
+          <h2 className="text-xl font-semibold mb-5">System Health</h2>
+
+          <div className="space-y-5">
+            {health.map((item) => (
+              <div key={item} className="flex justify-between items-center">
+                <span className="font-medium">{item}</span>
+
+                <span className="flex items-center gap-2 text-green-600 font-medium">
+                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                  Healthy
+                </span>
               </div>
             ))}
           </div>
-          <a className="view-details" href="#health">View details &rarr;</a>
+
+          <button className="mt-8 w-full rounded-lg bg-blue-600 py-3 text-white hover:bg-blue-700">
+            View Details
+          </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
