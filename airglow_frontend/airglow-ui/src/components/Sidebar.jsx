@@ -14,12 +14,6 @@ export default function Sidebar() {
 
         <li>
           <Link to="/dags" className="block p-4 hover:bg-gray-700">
-            Pipelines
-          </Link>
-        </li>
-
-        <li>
-          <Link to="/dags" className="block p-4 hover:bg-gray-700">
             DAGs
           </Link>
         </li>
