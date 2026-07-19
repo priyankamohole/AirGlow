@@ -8,11 +8,11 @@ import os
 Base.metadata.create_all(bind=engine)
 
 
-app = FastAPI(root_path="/auth")
+app = FastAPI()
 
 origins = [
     "http://localhost:5173",
-]
+] 
 
 app.add_middleware(
     SessionMiddleware,

@@ -9,13 +9,21 @@ import RunDetails from "./pages/RunDetails.jsx";
 import Webhooks from "./pages/Webhooks.jsx";
 import Placeholder from "./pages/Placeholder.jsx";
 import OAuthSuccess from "./pages/OAuthSuccess.jsx";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/oauth-success" element={<OAuthSuccess />} />
-      <Route path="/app" element={<Layout />}>
+      <Route
+        path="/app"
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="dags" element={<Dags />} />

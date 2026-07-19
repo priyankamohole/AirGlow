@@ -99,7 +99,7 @@ async def get_current_user(token:str=Depends(oauth2_scheme)):
 #         "access_token":jwt_token
 #     }
 
-@router.get("/auth/google")
+@router.get("/google/callback")
 async def auth_google(request: Request):
     token = await oauth.google.authorize_access_token(request)
     user_info = token.get("userinfo")
@@ -113,10 +113,10 @@ async def auth_google(request: Request):
     )
 
 @router.get("/login/google")
-async def login_google(request : Request):
-    redirect_uri=request.url_for("auth_google")
+async def login_google(request: Request):
+    redirect_uri = "http://localhost/auth/google/callback"
+    print("Redirect URI:", redirect_uri)
     return await oauth.google.authorize_redirect(request, redirect_uri)
-
 
 # @router.get("/auth/github")
 # async def auth_github(request:Request):
@@ -130,22 +130,42 @@ async def login_google(request : Request):
 #         "access_token":jwt_token
 #     }
 
-@router.get("/auth/github")
-async def auth_github(request: Request):
-    token = await oauth.github.authorize_access_token(request)
-    resp = await oauth.github.get("user", token=token)
-    user_info = resp.json()
+# @router.get("/github/callback")
+# async def auth_github(request: Request):
+#     token = await oauth.github.authorize_access_token(request)
+#     resp = await oauth.github.get("user", token=token)
+#     user_info = resp.json()
 
-    jwt_token = create_access_token(
-        data={"sub": user_info.get("email") or user_info.get("login")}
-    )
+#     jwt_token = create_access_token(
+#         data={"sub": user_info.get("email") or user_info.get("login")}
+#     )
 
-    return RedirectResponse(
-        url=f"http://localhost:5173/oauth-success?token={jwt_token}"
-    )
+#     return RedirectResponse(
+#         url=f"http://localhost:5173/oauth-success?token={jwt_token}"
+#     )
+
+# @router.get("/login/github")
+# async def login_github(request:Request):
+#     redirect_uri=request.url_for("auth_github")
+#     return await oauth.github.authorize_redirect(request, redirect_uri)
 
 @router.get("/login/github")
-async def login_github(request:Request):
-    redirect_uri=request.url_for("auth_github")
+async def login_github(request: Request):
+    redirect_uri = "http://localhost/auth/github/callback"
     return await oauth.github.authorize_redirect(request, redirect_uri)
 
+
+@router.get("/github/callback")
+async def auth_github(request: Request):
+    token = await oauth.github.authorize_access_token(request)
+
+    resp = await oauth.github.get("user", token=token)
+    user = resp.json()
+
+    jwt_token = create_access_token({
+        "sub": user["login"]
+    })
+
+    return RedirectResponse(
+        f"http://localhost:5173/oauth-success?token={jwt_token}"
+    )

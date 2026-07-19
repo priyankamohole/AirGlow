@@ -4,6 +4,7 @@ import etlIllustration from "../assets/etl.png";
 import api from "../utils/axios";
 import { useState } from "react";
 import Dashboard from "./Dashboard.jsx";
+import { useEffect } from "react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -12,6 +13,14 @@ export default function Login() {
     username: "",
     password: "",
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      navigate("/app/dashboard");
+    }
+  }, []);
 
   const [loading, setLoading] = useState(false);
 
