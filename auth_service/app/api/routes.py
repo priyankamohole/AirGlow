@@ -67,25 +67,76 @@ async def register(user: schema.UserCreate, db=Depends(get_db)):
 @router.post("/login")
 async def login(user:schema.UserLogin, db=Depends(get_db)):
     db_user=db.query(models.User).filter(models.User.username==user.username).first()
-    if not db_user or not verify_password(user.password, db_user.hashed_password):
-        raise HTTPException(status_code=401, detail="Invalid Credentials")
-    
+    # if not db_user or not verify_password(user.password, db_user.hashed_password):
+    #     raise HTTPException(status_code=401, detail="Invalid Credentials")
+    # if not verify_password(
+    #     user.password,
+    #     db_user.hashed_password
+    # ):
+    #     raise HTTPException(401, "Invalid Credentials")
+    if not db_user:
+        raise HTTPException(
+        status_code=401,
+        detail="Invalid Credentials"
+    )
+
+    if db_user.hashed_password == "":
+        raise HTTPException(
+        status_code=400,
+        detail="Please sign in using Google or GitHub."
+    )
+
+    if not verify_password(schema.user.password, db_user.hashed_password):
+        raise HTTPException(
+        status_code=401,
+        detail="Invalid Credentials"
+    )
+ 
     token=create_access_token(data={"sub":db_user.username})
     return {"access_token":token}
     
     
 #authorization
-oauth2_scheme=OAuth2PasswordBearer(tokenUrl="login")
-async def get_current_user(token:str=Depends(oauth2_scheme)):
-    try:
-        payload=jwt.decode(token,SECRET_KEY,algorithms=ALGORITHM)
-        username:str=payload.get("sub")
-        if username is None:    
-            raise HTTPException(status_code=401, detail="Invalid Credentials")
-        return username
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid Credentials")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db=Depends(get_db)
+):
+    try:
+        payload = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM]
+        )
+
+        username = payload.get("sub")
+
+        if username is None:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid credentials"
+            )
+
+        user = (
+            db.query(models.User)
+            .filter(models.User.username == username)
+            .first()
+        )
+
+        if user is None:
+            raise HTTPException(
+                status_code=404,
+                detail="User not found"
+            )
+
+        return user
+
+    except JWTError:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid credentials"
+        )
 
 
 # @router.get("/auth/google")
@@ -100,16 +151,44 @@ async def get_current_user(token:str=Depends(oauth2_scheme)):
 #     }
 
 @router.get("/google/callback")
-async def auth_google(request: Request):
+async def auth_google(
+    request: Request,
+    db=Depends(get_db)
+):
     token = await oauth.google.authorize_access_token(request)
+
     user_info = token.get("userinfo")
 
+    email = user_info["email"]
+
+    username = email.split("@")[0]
+
+    user = (
+        db.query(models.User)
+        .filter(models.User.email == email)
+        .first()
+    )
+
+    if not user:
+
+        user = models.User(
+            username=username,
+            email=email,
+            hashed_password=""
+        )
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
     jwt_token = create_access_token(
-        data={"sub": user_info.get("email")}
+        {
+            "sub": user.username
+        }
     )
 
     return RedirectResponse(
-        url=f"http://localhost:5173/oauth-success?token={jwt_token}"
+        f"http://localhost:5173/oauth-success?token={jwt_token}"
     )
 
 @router.get("/login/google")
@@ -156,16 +235,60 @@ async def login_github(request: Request):
 
 
 @router.get("/github/callback")
-async def auth_github(request: Request):
+async def auth_github(
+    request: Request,
+    db=Depends(get_db)
+):
     token = await oauth.github.authorize_access_token(request)
 
-    resp = await oauth.github.get("user", token=token)
-    user = resp.json()
+    resp = await oauth.github.get(
+        "user",
+        token=token
+    )
 
-    jwt_token = create_access_token({
-        "sub": user["login"]
-    })
+    user_info = resp.json()
+
+    username = user_info["login"]
+
+    email = user_info.get("email")
+
+    if email is None:
+        email = f"{username}@github.local"
+
+    user = (
+        db.query(models.User)
+        .filter(models.User.email == email)
+        .first()
+    )
+
+    if not user:
+
+        user = models.User(
+            username=username,
+            email=email,
+            hashed_password=""
+        )
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    jwt_token = create_access_token(
+        {
+            "sub": user.username
+        }
+    )
 
     return RedirectResponse(
         f"http://localhost:5173/oauth-success?token={jwt_token}"
     )
+
+@router.get("/me")
+async def get_me(
+    current_user: models.User = Depends(get_current_user)
+):
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email
+    }

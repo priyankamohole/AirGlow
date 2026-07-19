@@ -37,13 +37,11 @@ export default function Login() {
     try {
       setLoading(true);
 
-      const response = await api.post("/login", form);
+      api.post("/login", form).then((res) => {
+        localStorage.setItem("token", res.data.access_token);
 
-      console.log(response.data);
-
-      localStorage.setItem("token", response.data.access_token);
-
-      navigate("/app/dashboard");
+        navigate("/app/dashboard");
+      });
     } catch (err) {
       console.log(err);
 

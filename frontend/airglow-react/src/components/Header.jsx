@@ -1,6 +1,20 @@
 import { Menu, Bell, Search, UserCircle } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import api from "../utils/axios";
 
 export default function Header({ setSidebarOpen }) {
+  const [user, setUser] = useState({
+    username: "",
+    email: "",
+  });
+
+  useEffect(() => {
+    api
+      .get("/me")
+      .then((res) => setUser(res.data))
+      .catch(console.error);
+  }, []);
   return (
     <header className="h-16 bg-white shadow flex items-center justify-between px-6 sticky top-0 z-30">
       {/* Left */}
@@ -33,8 +47,10 @@ export default function Header({ setSidebarOpen }) {
           <UserCircle size={34} className="text-blue-700" />
 
           <div className="hidden md:block">
-            <h4 className="font-semibold">Admin</h4>
-            <p className="text-xs text-gray-500">admin@airglow.com</p>
+            <h4 className="font-semibold">{user.username || "Loading..."}</h4>
+            <p className="text-xs text-gray-500">
+              {user.email || "Loading..."}
+            </p>
           </div>
         </div>
       </div>

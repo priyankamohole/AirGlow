@@ -1,4 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import api from "../utils/axios";
 import {
   LayoutDashboard,
   Workflow,
@@ -63,6 +65,18 @@ const menuItems = [
 export default function Sidebar() {
   const navigate = useNavigate();
 
+  const [user, setUser] = useState({
+    username: "",
+    email: "",
+  });
+
+  useEffect(() => {
+    api
+      .get("/me")
+      .then((res) => setUser(res.data))
+      .catch(console.error);
+  }, []);
+
   const logout = () => {
     localStorage.removeItem("token");
     navigate("/");
@@ -79,7 +93,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto px-4 py-6">
-        <p className="uppercase text-xs text-blue-300 mb-3 font-semibold">
+        <p className="uppercase text-xs text-blue-300 mb-4 font-semibold tracking-wider">
           Navigation
         </p>
 
@@ -89,12 +103,11 @@ export default function Sidebar() {
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300
-                 ${
-                   isActive
-                     ? "bg-white text-blue-900 shadow-lg font-semibold"
-                     : "hover:bg-blue-800"
-                 }`
+                `flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 ${
+                  isActive
+                    ? "bg-white text-blue-900 shadow-lg font-semibold"
+                    : "hover:bg-blue-800 hover:translate-x-1"
+                }`
               }
             >
               {item.icon}
@@ -108,18 +121,19 @@ export default function Sidebar() {
       <div className="border-t border-blue-800 p-5">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-cyan-400 flex items-center justify-center text-lg font-bold text-blue-900">
-            AD
+            {user.username ? user.username.charAt(0).toUpperCase() : "A"}
           </div>
 
           <div>
-            <h3 className="font-semibold">Admin User</h3>
-            <p className="text-xs text-blue-200">admin@airglow.com</p>
+            <h3 className="font-semibold">{user.username || "Loading..."}</h3>
+
+            <p className="text-xs text-blue-200">{user.email || ""}</p>
           </div>
         </div>
 
         <button
           onClick={logout}
-          className="mt-5 w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 py-3 rounded-xl transition"
+          className="mt-5 w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 py-3 rounded-xl transition-all"
         >
           <LogOut size={18} />
           Logout
