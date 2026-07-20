@@ -65,40 +65,48 @@ async def register(user: schema.UserCreate, db=Depends(get_db)):
 
 #authentication
 @router.post("/login")
-async def login(user:schema.UserLogin, db=Depends(get_db)):
-    db_user=db.query(models.User).filter(models.User.username==user.username).first()
-    # if not db_user or not verify_password(user.password, db_user.hashed_password):
-    #     raise HTTPException(status_code=401, detail="Invalid Credentials")
-    # if not verify_password(
-    #     user.password,
-    #     db_user.hashed_password
-    # ):
-    #     raise HTTPException(401, "Invalid Credentials")
+async def login(user: schema.UserLogin, db=Depends(get_db)):
+
+    db_user = (
+        db.query(models.User)
+        .filter(models.User.username == user.username)
+        .first()
+    )
+
     if not db_user:
         raise HTTPException(
-        status_code=401,
-        detail="Invalid Credentials"
-    )
+            status_code=401,
+            detail="Invalid Credentials"
+        )
 
     if db_user.hashed_password == "":
         raise HTTPException(
-        status_code=400,
-        detail="Please sign in using Google or GitHub."
+            status_code=400,
+            detail="Please sign in using Google or GitHub."
+        )
+
+    if not verify_password(
+        user.password,
+        db_user.hashed_password
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Credentials"
+        )
+
+    token = create_access_token(
+        data={
+            "sub": str(db_user.id)
+        }
     )
 
-    if not verify_password(schema.user.password, db_user.hashed_password):
-        raise HTTPException(
-        status_code=401,
-        detail="Invalid Credentials"
-    )
- 
-    token=create_access_token(data={"sub":db_user.username})
-    return {"access_token":token}
+    return {
+        "access_token": token
+    }
     
     
 #authorization
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db=Depends(get_db)
@@ -110,9 +118,9 @@ async def get_current_user(
             algorithms=[ALGORITHM]
         )
 
-        username = payload.get("sub")
+        user_id = payload.get("sub")
 
-        if username is None:
+        if user_id is None:
             raise HTTPException(
                 status_code=401,
                 detail="Invalid credentials"
@@ -120,7 +128,7 @@ async def get_current_user(
 
         user = (
             db.query(models.User)
-            .filter(models.User.username == username)
+            .filter(models.User.id == int(user_id))
             .first()
         )
 
@@ -182,11 +190,10 @@ async def auth_google(
         db.refresh(user)
 
     jwt_token = create_access_token(
-        {
-            "sub": user.username
-        }
-    )
-
+    data={
+        "sub": str(user.id)
+    }
+)
     return RedirectResponse(
         f"http://localhost:5173/oauth-success?token={jwt_token}"
     )

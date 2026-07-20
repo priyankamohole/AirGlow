@@ -9,7 +9,10 @@ class OutputFile(Base):
         ForeignKey("dag_runs.id")
     )
     dag_id = Column(Integer, ForeignKey("dags.id"))
-    user_id=Column(Integer)
+    user_id = Column(
+    Integer,
+    ForeignKey("users.id")
+)
     file_name=Column(String)                                                  
     file_type=Column(String)
     records_count=Column(Integer)

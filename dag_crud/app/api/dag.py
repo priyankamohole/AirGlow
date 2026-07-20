@@ -21,64 +21,34 @@ router=APIRouter(prefix="/dags",tags=["DAGs"])
 @router.post("/", response_model=DAGResponse)
 @limiter.limit("20/minute")
 def create_dag(
-    request : Request,
+    request: Request,
     payload: DAGCreate,
     current_user=Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     if payload.scheduler_type == "auto":
         if not payload.cron_expression:
             raise HTTPException(
                 status_code=400,
-                detail="cron_expression is required for auto scheduler"
+                detail="cron_expression is required for auto scheduler",
             )
 
         if not croniter.is_valid(payload.cron_expression):
             raise HTTPException(
                 status_code=400,
-                detail="Invalid cron expression"
+                detail="Invalid cron expression",
             )
 
     dag = DAG(
         **payload.dict(),
-        user_id=int(current_user["sub"])
+        user_id=current_user["sub"],
     )
-    print("CURRENT USER:", current_user)
-    print(type(current_user))
 
     db.add(dag)
     db.commit()
     db.refresh(dag)
 
-
     return dag
-
-
-@router.get("/me")
-def me(current_user=Depends(get_current_user)):
-    return current_user
-
-
-
-@router.get("/", response_model=list[DAGResponse])
-def get_dags(
-    current_user= Depends(get_current_user),
-    db: Session = Depends(get_db)):
-    return db.query(DAG).filter(
-        DAG.user_id == current_user["sub"]
-    ).all()
-    
-
-
-
-@router.get("/{dag_id}", response_model=DAGResponse)
-def get_dag(dag_id:int, db:Session=Depends(get_db)):
-    dag=db.query(DAG).filter(DAG.id==dag_id).first()
-    if not dag:
-        raise HTTPException(status_code=404, detail="DAG Not Found")
-    
-    return dag
-
 
 @router.put("/{dag_id}", response_model=DAGResponse)
 def update_dag(dag_id:int, payload:DAGUpdate, db:Session=Depends(get_db)):

@@ -1,8 +1,7 @@
-from fastapi import Header , HTTPException, Depends
-from app.core.security import verify_token
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from dotenv import load_dotenv
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import os
 
 load_dotenv()
@@ -10,28 +9,34 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 
-security = HTTPBearer()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    token: str = Depends(oauth2_scheme)
 ):
-    token = credentials.credentials
-    print("TOKEN:", token)
-
     try:
+
         payload = jwt.decode(
             token,
             SECRET_KEY,
             algorithms=[ALGORITHM]
         )
 
-        print("PAYLOAD:", payload)
-        return payload
+        user_id = payload.get("sub")
 
-    except Exception as e:
-        print(credentials)
-        print("JWT ERROR:", e)
+        if user_id is None:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid Token"
+            )
+
+        return {
+            "sub": int(user_id)
+        }
+
+    except JWTError:
         raise HTTPException(
             status_code=401,
-            detail=str(e)
+            detail="Invalid Token"
         )

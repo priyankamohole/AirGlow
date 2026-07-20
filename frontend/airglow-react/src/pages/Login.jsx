@@ -3,8 +3,8 @@ import { LogoIcon } from "../components/icons.jsx";
 import etlIllustration from "../assets/etl.png";
 import api from "../utils/axios";
 import { useState } from "react";
-import Dashboard from "./Dashboard.jsx";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -188,6 +188,15 @@ export default function Login() {
                 GitHub
               </button>
             </div>
+            <p className="text-center text-gray-500">
+              Don't have an account?
+              <Link
+                to="/register"
+                className="ml-2 text-blue-600 font-semibold hover:underline"
+              >
+                Register
+              </Link>
+            </p>
           </form>
         </div>
       </div>

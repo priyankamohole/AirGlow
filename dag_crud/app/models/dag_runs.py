@@ -7,6 +7,10 @@ class DAGRun(Base):
     __tablename__ = "dag_runs"
     
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(
+    Integer,
+    ForeignKey("users.id")
+)
     dag_id = Column(Integer, ForeignKey("dags.id", ondelete="CASCADE"))
     status = Column(String, default="queued")
     start_time = Column(DateTime, default=datetime.utcnow)
