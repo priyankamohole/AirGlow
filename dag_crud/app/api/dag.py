@@ -51,39 +51,69 @@ def create_dag(
     return dag
 
 @router.put("/{dag_id}", response_model=DAGResponse)
-def update_dag(dag_id:int, payload:DAGUpdate, db:Session=Depends(get_db)):
-    dag=db.query(DAG).filter(DAG.id==dag_id).first()
+def update_dag(
+    dag_id: int,
+    payload: DAGUpdate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    dag = (
+        db.query(DAG)
+        .filter(
+            DAG.id == dag_id,
+            DAG.user_id == current_user["sub"]
+        )
+        .first()
+    )
 
     if not dag:
-        raise HTTPException(status_code=404, detail="DAG Not Found")
-    
-    dag.dag_name=payload.dag_name
-    dag.dag_type=payload.dag_type
-    dag.scheduler_type=payload.scheduler_type
-    dag.cron_expression=payload.cron_expression
-    dag.source_config=payload.source_config
-    dag.transform_config=payload.transform_config
-    dag.destination_config=payload.destination_config   
+        raise HTTPException(
+            status_code=404,
+            detail="DAG not found",
+        )
+
+    dag.dag_name = payload.dag_name
+    dag.dag_type = payload.dag_type
+    dag.scheduler_type = payload.scheduler_type
+    dag.cron_expression = payload.cron_expression
+    dag.source_config = payload.source_config
+    dag.transform_config = payload.transform_config
+    dag.destination_config = payload.destination_config
 
     db.commit()
     db.refresh(dag)
+
     return dag
 
-
 @router.delete("/{dag_id}")
-def delete_dag(dag_id:int, db:Session=Depends(get_db)):
-    dag=db.query(DAG).filter(DAG.id==dag_id).first()
+def delete_dag(
+    dag_id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    dag = (
+        db.query(DAG)
+        .filter(
+            DAG.id == dag_id,
+            DAG.user_id == current_user["sub"]
+        )
+        .first()
+    )
 
     if not dag:
-        raise HTTPException(status_code=404, detail="DAG Not Found")
-    
+        raise HTTPException(
+            status_code=404,
+            detail="DAG not found",
+        )
+
     db.query(DAGRun).filter(
-        DAGRun.dag_id==dag_id
+        DAGRun.dag_id == dag_id
     ).delete()
-    
+
     db.delete(dag)
     db.commit()
-    return {"Message":"DAG Deleted Successfully"}
+
+    return {"message": "DAG deleted successfully"}
 
 
 
@@ -150,3 +180,39 @@ def get_runs(dag_id:int, db:Session=Depends(get_db)):
         .order_by(DAGRun.created_at.desc())
         .all()
     )
+
+
+@router.get("/", response_model=list[DAGResponse])
+def get_dags(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(DAG)
+        .filter(DAG.user_id == current_user["sub"])
+        .order_by(DAG.id.desc())
+        .all()
+    )
+
+@router.get("/{dag_id}", response_model=DAGResponse)
+def get_dag(
+    dag_id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    dag = (
+        db.query(DAG)
+        .filter(
+            DAG.id == dag_id,
+            DAG.user_id == current_user["sub"]
+        )
+        .first()
+    )
+
+    if not dag:
+        raise HTTPException(
+            status_code=404,
+            detail="DAG not found",
+        )
+
+    return dag

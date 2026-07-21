@@ -1,49 +1,120 @@
-import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import Badge from '../components/Badge.jsx'
-import { runsData, runLogs } from '../data/mockData.js'
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import api from "../utils/axios";
+import Badge from "../components/Badge";
 
-const tabs = ['Logs', 'Input', 'Output', 'Metrics']
+const tabs = ["Logs", "Input", "Output", "Metrics"];
 
 export default function RunDetails() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const [tab, setTab] = useState('Logs')
+  const { id } = useParams();
 
-  const run = runsData.find(r => String(r.id) === id) || runsData[0]
-  const logs = runLogs[run.id] || []
+  const navigate = useNavigate();
+
+  const [run, setRun] = useState(null);
+
+  const [tab, setTab] = useState("Logs");
+
+  useEffect(() => {
+    api
+      .get(`/runs/${id}`)
+      .then((res) => setRun(res.data))
+      .catch(console.error);
+  }, [id]);
+
+  if (!run) {
+    return <div className="p-6 text-center">Loading...</div>;
+  }
 
   return (
-    <div className="page">
-      <div className="breadcrumb" onClick={() => navigate('/app/runs')}>&larr; Back to runs</div>
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div className="run-info-grid">
-          <div className="cell"><div className="lbl">Run ID</div><div className="val">{run.id}</div></div>
-          <div className="cell"><div className="lbl">DAG name</div><div className="val">{run.dag}</div></div>
-          <div className="cell"><div className="lbl">Status</div><div className="val"><Badge status={run.status} /></div></div>
-          <div className="cell"><div className="lbl">Start time</div><div className="val">{run.start}</div></div>
-          <div className="cell"><div className="lbl">Duration</div><div className="val">{run.duration}</div></div>
-          <div className="cell"><div className="lbl">Records</div><div className="val">{run.records}</div></div>
+    <div className="min-h-screen bg-slate-100 p-6">
+      <button
+        onClick={() => navigate("/app/runs")}
+        className="mb-5 text-blue-600 hover:underline"
+      >
+        ← Back to Runs
+      </button>
+
+      <div className="bg-white rounded-xl shadow border p-6">
+        <h1 className="text-2xl font-bold mb-6">Run Details</h1>
+
+        <div className="grid grid-cols-3 gap-6 mb-8">
+          <div>
+            <p className="text-gray-500">Run ID</p>
+            <h3>{run.id}</h3>
+          </div>
+
+          <div>
+            <p className="text-gray-500">DAG</p>
+            <h3>{run.dag_name}</h3>
+          </div>
+
+          <div>
+            <p className="text-gray-500">Status</p>
+            <Badge status={run.status} />
+          </div>
+
+          <div>
+            <p className="text-gray-500">Start Time</p>
+            <h3>{run.start_time}</h3>
+          </div>
+
+          <div>
+            <p className="text-gray-500">End Time</p>
+            <h3>{run.end_time || "--"}</h3>
+          </div>
+
+          <div>
+            <p className="text-gray-500">Duration</p>
+            <h3>{run.duration || "--"}</h3>
+          </div>
+
+          <div>
+            <p className="text-gray-500">Records Extracted</p>
+            <h3>{run.records_extracted || 0}</h3>
+          </div>
+
+          <div>
+            <p className="text-gray-500">Records Loaded</p>
+            <h3>{run.records_loaded || 0}</h3>
+          </div>
         </div>
 
-        <div className="tabs">
-          {tabs.map(t => (
-            <div key={t} className={'tab' + (tab === t ? ' active' : '')} onClick={() => setTab(t)}>{t}</div>
+        <div className="flex border-b mb-4">
+          {tabs.map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-5 py-3 ${
+                tab === t
+                  ? "border-b-2 border-blue-600 text-blue-600"
+                  : "text-gray-500"
+              }`}
+            >
+              {t}
+            </button>
           ))}
         </div>
 
-        {tab === 'Logs' ? (
-          <div className="terminal">
-            {logs.length ? logs.map((l, i) => (
-              <div key={i}><span className="ts">{l.ts}</span><span className={l.ok ? 'ok' : ''}>{l.text}</span></div>
-            )) : <div style={{ color: 'var(--text3)' }}>No logs recorded for this run.</div>}
+        {tab === "Logs" && (
+          <div className="bg-gray-900 text-green-400 rounded-lg p-4 font-mono text-sm">
+            {run.logs?.length ? (
+              run.logs.map((log, index) => (
+                <div key={index}>
+                  [{log.time}] {log.message}
+                </div>
+              ))
+            ) : (
+              <div>No logs available.</div>
+            )}
           </div>
-        ) : (
-          <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--text2)' }}>
-            No {tab.toLowerCase()} data to show for this run.
+        )}
+
+        {tab !== "Logs" && (
+          <div className="text-center text-gray-500 py-16">
+            No {tab} available.
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -1,30 +1,80 @@
-import { Link } from 'react-router-dom'
-import Badge from '../components/Badge.jsx'
-import { runsData } from '../data/mockData.js'
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import api from "../utils/axios";
+import Badge from "../components/Badge";
 
 export default function Runs() {
+  const [runs, setRuns] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .get("/runs")
+      .then((res) => {
+        setRuns(res.data);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <div className="p-6 text-center text-gray-500">Loading Runs...</div>;
+  }
+
   return (
-    <div className="page">
-      <div className="page-head"><h2>Runs</h2></div>
-      <div className="card flush">
-        <table>
-          <thead>
-            <tr><th>Run ID</th><th>DAG name</th><th>Status</th><th>Start time</th><th>Duration</th><th>Records</th></tr>
+    <div className="min-h-screen bg-slate-100 p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Runs</h1>
+      </div>
+
+      <div className="bg-white rounded-xl shadow border overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b">
+            <tr className="text-left">
+              <th className="p-4">Run ID</th>
+              <th>DAG</th>
+              <th>Status</th>
+              <th>Started</th>
+              <th>Duration</th>
+              <th>Records</th>
+              <th></th>
+            </tr>
           </thead>
+
           <tbody>
-            {runsData.map(r => (
-              <tr key={r.id} className="link-row">
-                <td><Link to={`/app/runs/${r.id}`}>{r.id}</Link></td>
-                <td>{r.dag}</td>
-                <td><Badge status={r.status} /></td>
-                <td>{r.start}</td>
-                <td>{r.duration}</td>
-                <td>{r.records}</td>
+            {runs.map((run) => (
+              <tr key={run.id} className="border-b hover:bg-gray-50">
+                <td className="p-4">{run.id}</td>
+
+                <td>{run.dag_name}</td>
+
+                <td>
+                  <Badge status={run.status} />
+                </td>
+
+                <td>{run.start_time}</td>
+
+                <td>{run.duration || "--"}</td>
+
+                <td>{run.records || 0}</td>
+
+                <td>
+                  <Link
+                    to={`/app/runs/${run.id}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    View
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+
+        {runs.length === 0 && (
+          <div className="text-center p-10 text-gray-500">No runs found.</div>
+        )}
       </div>
     </div>
-  )
+  );
 }

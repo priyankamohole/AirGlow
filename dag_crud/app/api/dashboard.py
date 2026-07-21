@@ -15,8 +15,10 @@ router = APIRouter(
 @router.get("/stats")
 def dashboard_stats(
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
+
+    user_id = current_user["sub"]
 
     total_dags = (
         db.query(DAG)
