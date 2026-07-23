@@ -35,7 +35,7 @@ export default function Dags() {
   const runDag = async (id) => {
     try {
       await axios.post(
-        `http://localhost/dags/run/${id}`,
+        `http://localhost/dags/run/${id}/run`,
         {},
         {
           headers: {
@@ -117,9 +117,9 @@ export default function Dags() {
                 <tr key={dag.id} className="border-b hover:bg-gray-50">
                   <td className="p-4">{dag.id}</td>
 
-                  <td className="font-medium">{dag.pipeline_name}</td>
+                  <td className="font-medium">{dag.dag_name}</td>
 
-                  <td>{dag.pipeline_type}</td>
+                  <td>{dag.dag_type}</td>
 
                   <td>
                     {dag.scheduler_type === "manual"
@@ -128,14 +128,8 @@ export default function Dags() {
                   </td>
 
                   <td>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        dag.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {dag.status || "Active"}
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                      Active
                     </span>
                   </td>
 
