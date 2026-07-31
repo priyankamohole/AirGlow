@@ -8,8 +8,8 @@ class DAGRun(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
-    Integer,
-    ForeignKey("users.id")
+    Integer, nullable=False
+    
 )
     dag_id = Column(Integer, ForeignKey("dags.id", ondelete="CASCADE"))
     status = Column(String, default="queued")

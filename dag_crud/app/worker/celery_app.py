@@ -1,10 +1,11 @@
+import os
 from celery import Celery
 
 celery = Celery(
     "airglow_clone",
-    broker="redis://localhost:6379/0",
-    backend="redis://localhost:6379/0",
-    include=["app.worker.tasks"]
+    broker=os.getenv("CELERY_BROKER_URL"),
+    backend=os.getenv("CELERY_RESULT_BACKEND"),
+    include=["app.worker.tasks"],
 )
 
 celery.conf.beat_schedule = {

@@ -1,4 +1,26 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: airglow_redis
+    restart: unless-stopped
+    networks:
+      - airglow_network
+
+  celery_worker:
+    build:
+      context: ./dag_crud
+      dockerfile: Dockerfile
+    container_name: airglow_celery_worker
+    command: celery -A app.worker.celery_app.celery worker --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    volumes:
+      - ./dag_crud:/app
+    networks:
+      - airglow_network
+
   gateway_service:
     build:
       context: ./gateway_service
@@ -38,6 +60,8 @@ services:
     ports:
       - "8001:8000"
     restart: unless-stopped
+    depends_on:
+      - redis
     volumes:
       - ./dag_crud:/app
     networks:
