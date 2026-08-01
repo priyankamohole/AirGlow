@@ -31,8 +31,8 @@ const menuItems = [
     icon: <PlayCircle size={20} />,
   },
   {
-    name: "Schedules",
-    path: "/app/schedules",
+    name: "Schedule",
+    path: "/app/schedule",
     icon: <CalendarDays size={20} />,
   },
   {
@@ -45,16 +45,16 @@ const menuItems = [
     path: "/app/webhooks",
     icon: <Webhook size={20} />,
   },
-  {
-    name: "Users",
-    path: "/app/users",
-    icon: <Users size={20} />,
-  },
-  {
-    name: "Settings",
-    path: "/app/settings",
-    icon: <Settings size={20} />,
-  },
+  // {
+  //   name: "Users",
+  //   path: "/app/users",
+  //   icon: <Users size={20} />,
+  // },
+  // {
+  //   name: "Settings",
+  //   path: "/app/settings",
+  //   icon: <Settings size={20} />,
+  // },
   {
     name: "Documentation",
     path: "/app/documentation",

@@ -8,6 +8,7 @@ import Register from "./pages/Register";
 import OAuthSuccess from "./pages/OAuthSuccess";
 
 import Dashboard from "./pages/Dashboard";
+
 import Dags from "./pages/Dags";
 import CreateDag from "./pages/CreateDag";
 import EditDag from "./pages/EditDag";
@@ -15,8 +16,13 @@ import ViewDag from "./pages/ViewDag";
 
 import Runs from "./pages/Runs";
 import RunDetails from "./pages/RunDetails";
+
+import Schedule from "./pages/Schedule";
 import Webhooks from "./pages/Webhooks";
-import Placeholder from "./pages/Placeholder";
+import Outputs from "./pages/Outputs";
+import Users from "./pages/Users";
+import Settings from "./pages/Settings";
+import Documentation from "./pages/Documentation";
 
 export default function App() {
   return (
@@ -37,28 +43,30 @@ export default function App() {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
 
+        {/* Dashboard */}
         <Route path="dashboard" element={<Dashboard />} />
 
-        {/* DAG Routes */}
+        {/* DAGs */}
         <Route path="dags" element={<Dags />} />
         <Route path="create-dag" element={<CreateDag />} />
         <Route path="edit-dag/:id" element={<EditDag />} />
         <Route path="view-dag/:id" element={<ViewDag />} />
 
-        {/* Run Routes */}
+        {/* Runs */}
         <Route path="runs" element={<Runs />} />
         <Route path="runs/:id" element={<RunDetails />} />
 
-        {/* Other Pages */}
+        {/* Schedule */}
+        <Route path="schedule" element={<Schedule />} />
+
+        {/* Webhooks */}
         <Route path="webhooks" element={<Webhooks />} />
-        <Route path="schedules" element={<Placeholder title="Schedules" />} />
-        <Route path="outputs" element={<Placeholder title="Outputs" />} />
-        <Route path="users" element={<Placeholder title="Users" />} />
-        <Route path="settings" element={<Placeholder title="Settings" />} />
-        <Route
-          path="documentation"
-          element={<Placeholder title="Documentation" />}
-        />
+
+        {/* Other Pages */}
+        <Route path="outputs" element={<Outputs />} />
+        {/* <Route path="users" element={<Users />} />
+        <Route path="settings" element={<Settings />} /> */}
+        <Route path="documentation" element={<Documentation />} />
       </Route>
 
       {/* 404 */}

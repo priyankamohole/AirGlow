@@ -7,22 +7,34 @@ const tabs = ["Logs", "Input", "Output", "Metrics"];
 
 export default function RunDetails() {
   const { id } = useParams();
-
   const navigate = useNavigate();
 
   const [run, setRun] = useState(null);
-
   const [tab, setTab] = useState("Logs");
 
+  const fetchRun = async () => {
+    try {
+      const res = await api.get(`/runs/${id}`);
+      setRun(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
-    api
-      .get(`/runs/${id}`)
-      .then((res) => setRun(res.data))
-      .catch(console.error);
+    fetchRun();
+
+    const interval = setInterval(fetchRun, 2000);
+
+    return () => clearInterval(interval);
   }, [id]);
 
   if (!run) {
-    return <div className="p-6 text-center">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
   }
 
   return (
@@ -34,57 +46,69 @@ export default function RunDetails() {
         ← Back to Runs
       </button>
 
-      <div className="bg-white rounded-xl shadow border p-6">
-        <h1 className="text-2xl font-bold mb-6">Run Details</h1>
+      <div className="rounded-xl border bg-white p-6 shadow">
+        <h1 className="mb-8 text-2xl font-bold">Run Details</h1>
 
-        <div className="grid grid-cols-3 gap-6 mb-8">
+        {/* Summary */}
+
+        <div className="grid gap-6 md:grid-cols-4">
           <div>
-            <p className="text-gray-500">Run ID</p>
-            <h3>{run.id}</h3>
+            <p className="text-sm text-gray-500">Run ID</p>
+            <h3 className="font-semibold">{run.id}</h3>
           </div>
 
           <div>
-            <p className="text-gray-500">DAG</p>
-            <h3>{run.dag_name}</h3>
+            <p className="text-sm text-gray-500">DAG</p>
+            <h3 className="font-semibold">
+              {run.dag_name || `DAG #${run.dag_id}`}
+            </h3>
           </div>
 
           <div>
-            <p className="text-gray-500">Status</p>
+            <p className="text-sm text-gray-500">Status</p>
             <Badge status={run.status} />
           </div>
 
           <div>
-            <p className="text-gray-500">Start Time</p>
-            <h3>{run.start_time}</h3>
+            <p className="text-sm text-gray-500">Execution Time</p>
+            <h3>{run.execution_time ?? "--"} sec</h3>
           </div>
 
           <div>
-            <p className="text-gray-500">End Time</p>
-            <h3>{run.end_time || "--"}</h3>
+            <p className="text-sm text-gray-500">Started</p>
+            <h3>
+              {run.start_time
+                ? new Date(run.start_time).toLocaleString()
+                : "--"}
+            </h3>
           </div>
 
           <div>
-            <p className="text-gray-500">Duration</p>
-            <h3>{run.duration || "--"}</h3>
+            <p className="text-sm text-gray-500">Finished</p>
+            <h3>
+              {run.end_time ? new Date(run.end_time).toLocaleString() : "--"}
+            </h3>
           </div>
 
           <div>
-            <p className="text-gray-500">Records Extracted</p>
-            <h3>{run.records_extracted || 0}</h3>
+            <p className="text-sm text-gray-500">Extracted</p>
+            <h3>{run.records_extracted}</h3>
           </div>
 
           <div>
-            <p className="text-gray-500">Records Loaded</p>
-            <h3>{run.records_loaded || 0}</h3>
+            <p className="text-sm text-gray-500">Loaded</p>
+            <h3>{run.records_loaded}</h3>
           </div>
         </div>
 
-        <div className="flex border-b mb-4">
+        {/* Tabs */}
+
+        <div className="mt-8 flex gap-6 border-b">
           {tabs.map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-5 py-3 ${
+              className={`px-4 py-3 ${
                 tab === t
                   ? "border-b-2 border-blue-600 text-blue-600"
                   : "text-gray-500"
@@ -95,25 +119,69 @@ export default function RunDetails() {
           ))}
         </div>
 
-        {tab === "Logs" && (
-          <div className="bg-gray-900 text-green-400 rounded-lg p-4 font-mono text-sm">
-            {run.logs?.length ? (
-              run.logs.map((log, index) => (
-                <div key={index}>
-                  [{log.time}] {log.message}
-                </div>
-              ))
-            ) : (
-              <div>No logs available.</div>
-            )}
-          </div>
-        )}
+        <div className="mt-6">
+          {/* Logs */}
 
-        {tab !== "Logs" && (
-          <div className="text-center text-gray-500 py-16">
-            No {tab} available.
-          </div>
-        )}
+          {tab === "Logs" && (
+            <div className="rounded-lg bg-gray-900 p-5 font-mono text-sm text-green-400">
+              {run.log ? (
+                <pre>{JSON.stringify(run.log, null, 2)}</pre>
+              ) : (
+                <div>No Logs Available</div>
+              )}
+            </div>
+          )}
+
+          {/* Input */}
+
+          {tab === "Input" && (
+            <pre className="overflow-auto rounded-lg bg-gray-100 p-4">
+              {JSON.stringify(run.log?.source || {}, null, 2)}
+            </pre>
+          )}
+
+          {/* Output */}
+
+          {tab === "Output" && (
+            <pre className="overflow-auto rounded-lg bg-gray-100 p-4">
+              {JSON.stringify(
+                {
+                  output_file: run.log?.output_file,
+                  destination: run.log?.destination,
+                  records_loaded: run.records_loaded,
+                },
+                null,
+                2,
+              )}
+            </pre>
+          )}
+
+          {/* Metrics */}
+
+          {tab === "Metrics" && (
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-lg bg-blue-50 p-4">
+                <h4 className="font-semibold">Execution Time</h4>
+                <p>{run.execution_time ?? 0} sec</p>
+              </div>
+
+              <div className="rounded-lg bg-green-50 p-4">
+                <h4 className="font-semibold">Records Extracted</h4>
+                <p>{run.records_extracted}</p>
+              </div>
+
+              <div className="rounded-lg bg-yellow-50 p-4">
+                <h4 className="font-semibold">Records Transformed</h4>
+                <p>{run.records_transformed}</p>
+              </div>
+
+              <div className="rounded-lg bg-purple-50 p-4">
+                <h4 className="font-semibold">Records Loaded</h4>
+                <p>{run.records_loaded}</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

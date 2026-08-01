@@ -31,34 +31,20 @@ def run_dag(dag_id, run_id):
 
         webhook=(
             db.query(Webhook)
-            .filter(webhook.dag_id == dag.id)
-            .first(),
-            db.commit()
+            .filter(Webhook.dag_id == dag.id)
+            .first()
+          
         )
-
-        if webhook:
-
-            send_webhook(
-                webhook.callback_url,
-                {
-                    "dag_id": dag.id,
-                    "run_id":run.id,
-                    "status": run.status,
-                    "execution_time":run.execution_time,
-                    "records_loaded":run.records_loaded
-                }
-            )
-
         
 
         if not dag:
             raise Exception(f"DAG with id {dag_id} not found")
         
         if run:
-            run.status = "running"
+            run.status = "Running"
             run.start_time = datetime.utcnow()
             db.commit()
-
+            db.refresh(run)
         
 
         data = extract_data(dag.source_config)
@@ -96,7 +82,7 @@ def run_dag(dag_id, run_id):
 
 
         if run:
-            run.status = "success"
+            run.status = "Success"
             run.end_time = datetime.utcnow()
 
             run.log={
@@ -123,15 +109,32 @@ def run_dag(dag_id, run_id):
 
     except Exception as e:
         db.rollback()
+        run = db.query(DAGRun).filter(DAGRun.id == run_id).first()
         if run :
-            run.status = "failed"
+            run.status = "Failed"
             run.end_time = datetime.utcnow()
             run.log={"status": "failed",
                      "error": str(e),
                     "time": datetime.utcnow().isoformat()}
             db.commit()
+        if webhook:
+                    
+                                send_webhook(
+                                    webhook.callback_url,
+                                    {
+                                        "dag_id": dag.id,
+                                        "run_id":run.id,
+                                        "status": run.status,
+                                        "execution_time":run.execution_time,
+                                        "records_loaded":run.records_loaded
+                                    }
+                                )
+        
     finally:
             db.close()
+
+    
+
 
    
 
@@ -162,7 +165,7 @@ def scan_and_trigger_dags():
         dags = db.query(DAG).all()
         for dag in dags:
             if is_dag_due(dag):
-                run = DAGRun(dag_id=dag.id, status="queued")
+                run = DAGRun(dag_id=dag.id, status="Queued")
                 db.add(run)
                 db.commit()
                 db.refresh(run)
