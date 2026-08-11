@@ -11,10 +11,6 @@ export default function Dags() {
 
   const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    fetchDags();
-  }, []);
-
   const fetchDags = async () => {
     try {
       const res = await axios.get("http://localhost/dags/", {
@@ -25,12 +21,16 @@ export default function Dags() {
 
       setDags(res.data);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to load DAGs:", err);
       alert("Failed to load DAGs");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchDags();
+  }, []);
 
   const runDag = async (id) => {
     try {
@@ -44,52 +44,24 @@ export default function Dags() {
         },
       );
 
-      alert(res.data.message);
+      console.log("DAG run started:", res.data);
+
+      alert(`DAG started successfully.\nRun ID: ${res.data.run_id}`);
+
+      // Go directly to the Run Details page
+      navigate(`/app/runs/${res.data.run_id}`);
     } catch (err) {
-      console.error(err.response?.status);
+      console.error("Failed to start DAG:", err);
       console.error(err.response?.data);
-      alert(JSON.stringify(err.response?.data));
+
+      alert(err.response?.data?.detail || "Unable to start DAG");
     }
   };
 
-  // const runDag = async (id) => {
-  //   try {
-  //     await axios.post(
-  //       `http://localhost/dags/${id}/run`,
-  //       {},
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       },
-  //     );
-
-  //     alert("DAG Started");
-  //   } catch (err) {
-  //     console.log(err);
-  //     alert("Unable to start DAG");
-  //   }
-  // };
-
-  // const deleteDag = async (id) => {
-  //   if (!window.confirm("Delete this DAG?")) return;
-
-  //   try {
-  //     await axios.delete(`http://localhost/dags/${id}`, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-
-  //     fetchDags();
-  //   } catch (err) {
-  //     console.log(err);
-  //     alert("Delete failed");
-  //   }
-  // };
-
   const deleteDag = async (id) => {
-    if (!window.confirm("Delete this DAG?")) return;
+    if (!window.confirm("Delete this DAG?")) {
+      return;
+    }
 
     try {
       const res = await axios.delete(`http://localhost/dags/${id}`, {
@@ -99,17 +71,19 @@ export default function Dags() {
       });
 
       alert(res.data.message);
+
       fetchDags();
     } catch (err) {
-      console.error(err.response?.status);
+      console.error("Delete failed:", err);
       console.error(err.response?.data);
-      alert(JSON.stringify(err.response?.data));
+
+      alert(err.response?.data?.detail || "Delete failed");
     }
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen text-xl">
+      <div className="flex h-screen items-center justify-center text-xl">
         Loading...
       </div>
     );
@@ -119,11 +93,19 @@ export default function Dags() {
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">DAGs</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">
+            DAGs
+          </h1>
+
+          <p className="text-sm text-gray-500">
+            Manage and execute your data pipelines
+          </p>
+        </div>
 
         <button
           onClick={() => navigate("/app/create-dag")}
-          className="w-full sm:w-auto rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
+          className="w-full rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 sm:w-auto"
         >
           Create DAG
         </button>
@@ -165,7 +147,7 @@ export default function Dags() {
                   <td className="p-4 whitespace-nowrap">
                     {dag.scheduler_type === "manual"
                       ? "Manual"
-                      : dag.cron_expression}
+                      : dag.cron_expression || "-"}
                   </td>
 
                   <td className="p-4">
@@ -182,28 +164,38 @@ export default function Dags() {
 
                   <td className="p-4">
                     <div className="flex justify-center gap-3">
+                      {/* Run */}
                       <button
                         onClick={() => runDag(dag.id)}
+                        title="Run DAG"
                         className="rounded p-1 text-green-600 hover:bg-green-100"
                       >
                         <Play size={18} />
                       </button>
 
+                      {/* Edit */}
                       <button
                         onClick={() => navigate(`/app/edit-dag/${dag.id}`)}
+                        title="Edit DAG"
                         className="rounded p-1 text-blue-600 hover:bg-blue-100"
                       >
                         <Pencil size={18} />
                       </button>
 
+                      {/* Delete */}
                       <button
                         onClick={() => deleteDag(dag.id)}
+                        title="Delete DAG"
                         className="rounded p-1 text-red-600 hover:bg-red-100"
                       >
                         <Trash2 size={18} />
                       </button>
 
-                      <button className="rounded p-1 text-gray-600 hover:bg-gray-100">
+                      {/* More */}
+                      <button
+                        title="More"
+                        className="rounded p-1 text-gray-600 hover:bg-gray-100"
+                      >
                         <MoreVertical size={18} />
                       </button>
                     </div>
@@ -216,7 +208,7 @@ export default function Dags() {
       </div>
 
       {/* Footer */}
-      <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl bg-white px-6 py-4 shadow">
+      <div className="mt-4 flex flex-col gap-4 rounded-xl bg-white px-6 py-4 shadow sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-gray-500">Showing {dags.length} DAG(s)</p>
 
         <div className="flex justify-center gap-2">

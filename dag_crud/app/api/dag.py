@@ -117,23 +117,84 @@ def delete_dag(
 
 
 
+# @router.get("/{dag_id}/download")
+# def download_file(
+#     dag_id: int,
+#     current_user = Depends(get_current_user),
+#     db: Session = Depends(get_db)
+# ):
+#     dag = db.query(DAG).filter(
+#         DAG.id == dag_id,
+#         DAG.user_id == current_user["sub"]
+#     ).first()
+
+#     if not dag:
+#         raise HTTPException(
+#             status_code=403,
+#             detail="You are not allowed to access this DAG"
+#         )
+
+#     file = (
+#         db.query(OutputFile)
+#         .filter(OutputFile.dag_id == dag_id)
+#         .order_by(OutputFile.id.desc())
+#         .first()
+#     )
+
+#     if not file:
+#         raise HTTPException(
+#             status_code=404,
+#             detail="No output found for this DAG"
+#         )
+
+#     # Existing JSON/CSV/DB logic
+
+#     elif file.file_type == "csv":
+#         df = pd.DataFrame(file.content)
+
+#         return Response(
+#             content=df.to_csv(index=False),
+#             media_type="text/csv",
+#             headers={
+#                 "Content-Disposition":
+#                 f'attachment; filename="{file.file_name}"'
+#             }
+#         )
+
+#     elif file.file_type == "db":
+#         return {
+#             "message": "Data stored in database",
+#             "records": file.records_count,
+#             "data": file.content
+#         }
+
+#     raise HTTPException(
+#         status_code=400,
+#         detail="Unsupported file type"
+#     )
 @router.get("/{dag_id}/download")
 def download_file(
     dag_id: int,
-    current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    dag = db.query(DAG).filter(
-        DAG.id == dag_id,
-        DAG.user_id == current_user["sub"]
-    ).first()
+    # Check DAG belongs to current user
+    dag = (
+        db.query(DAG)
+        .filter(
+            DAG.id == dag_id,
+            DAG.user_id == current_user["sub"],
+        )
+        .first()
+    )
 
     if not dag:
         raise HTTPException(
             status_code=403,
-            detail="You are not allowed to access this DAG"
+            detail="You are not allowed to access this DAG",
         )
 
+    # Get latest generated output
     file = (
         db.query(OutputFile)
         .filter(OutputFile.dag_id == dag_id)
@@ -144,11 +205,24 @@ def download_file(
     if not file:
         raise HTTPException(
             status_code=404,
-            detail="No output found for this DAG"
+            detail="No output file available for this DAG",
         )
 
-    # Existing JSON/CSV/DB logic
+    # JSON file
+    if file.file_type == "json":
+        content = json.dumps(file.content, indent=2)
 
+        return Response(
+            content=content,
+            media_type="application/json",
+            headers={
+                "Content-Disposition": (
+                    f'attachment; filename="{file.file_name}"'
+                )
+            },
+        )
+
+    # CSV file
     elif file.file_type == "csv":
         df = pd.DataFrame(file.content)
 
@@ -156,21 +230,23 @@ def download_file(
             content=df.to_csv(index=False),
             media_type="text/csv",
             headers={
-                "Content-Disposition":
-                f'attachment; filename="{file.file_name}"'
-            }
+                "Content-Disposition": (
+                    f'attachment; filename="{file.file_name}"'
+                )
+            },
         )
 
+    # Database output
     elif file.file_type == "db":
         return {
             "message": "Data stored in database",
             "records": file.records_count,
-            "data": file.content
+            "data": file.content,
         }
 
     raise HTTPException(
         status_code=400,
-        detail="Unsupported file type"
+        detail=f"Unsupported file type: {file.file_type}",
     )
 
 @router.get("/{dag_id}/runs")

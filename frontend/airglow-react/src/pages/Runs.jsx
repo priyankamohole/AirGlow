@@ -9,10 +9,10 @@ export default function Runs() {
 
   const fetchRuns = async () => {
     try {
-      const { data } = await api.get("/runs");
-      setRuns(data);
+      const res = await api.get("/runs");
+      setRuns(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to fetch runs:", err);
     } finally {
       setLoading(false);
     }
@@ -28,7 +28,7 @@ export default function Runs() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center text-xl">
+      <div className="flex h-screen items-center justify-center text-xl font-semibold">
         Loading Runs...
       </div>
     );
@@ -36,26 +36,32 @@ export default function Runs() {
 
   return (
     <div className="min-h-screen bg-slate-100 p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800">DAG Runs</h1>
-          <p className="text-gray-500">
-            Monitor all pipeline executions in real time
-          </p>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-800">DAG Runs</h1>
+
+        <p className="text-gray-500">Monitor your DAG execution status</p>
       </div>
 
-      <div className="overflow-x-auto rounded-xl bg-white shadow border">
-        <table className="w-full min-w-[900px]">
-          <thead className="bg-gray-50 border-b">
-            <tr className="text-left text-gray-600">
+      <div className="overflow-x-auto rounded-xl border bg-white shadow">
+        <table className="min-w-[950px] w-full">
+          <thead className="border-b bg-gray-50">
+            <tr className="text-left text-sm text-gray-600">
               <th className="p-4">Run ID</th>
-              <th>DAG Name</th>
+
+              <th>DAG</th>
+
               <th>Status</th>
+
               <th>Started</th>
-              <th>Execution</th>
+
+              <th>Duration</th>
+
               <th>Extracted</th>
+
+              <th>Transformed</th>
+
               <th>Loaded</th>
+
               <th className="text-center">Action</th>
             </tr>
           </thead>
@@ -63,19 +69,16 @@ export default function Runs() {
           <tbody>
             {runs.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-12 text-center text-gray-500">
-                  No DAG Runs Found
+                <td colSpan={9} className="py-10 text-center text-gray-500">
+                  No Runs Found
                 </td>
               </tr>
             ) : (
               runs.map((run) => (
-                <tr
-                  key={run.id}
-                  className="border-b hover:bg-slate-50 transition"
-                >
-                  <td className="p-4 font-semibold">#{run.id}</td>
+                <tr key={run.id} className="border-b hover:bg-gray-50">
+                  <td className="p-4 font-medium">#{run.id}</td>
 
-                  <td>{run.dag_name}</td>
+                  <td>{run.dag_name || `DAG #${run.dag_id}`}</td>
 
                   <td>
                     <Badge status={run.status} />
@@ -88,25 +91,23 @@ export default function Runs() {
                   </td>
 
                   <td>
-                    {run.execution_time ? (
-                      `${run.execution_time.toFixed(2)} sec`
-                    ) : (
-                      <span className="text-orange-600 font-medium">
-                        Running...
-                      </span>
-                    )}
+                    {run.execution_time != null
+                      ? `${run.execution_time.toFixed(2)} sec`
+                      : "--"}
                   </td>
 
-                  <td>{run.records_extracted}</td>
+                  <td>{run.records_extracted ?? 0}</td>
 
-                  <td>{run.records_loaded}</td>
+                  <td>{run.records_transformed ?? 0}</td>
+
+                  <td>{run.records_loaded ?? 0}</td>
 
                   <td className="text-center">
                     <Link
                       to={`/app/runs/${run.id}`}
-                      className="rounded bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
+                      className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
                     >
-                      View Details
+                      View
                     </Link>
                   </td>
                 </tr>
@@ -116,10 +117,8 @@ export default function Runs() {
         </table>
       </div>
 
-      <div className="mt-4 rounded-xl bg-white p-4 shadow">
-        <p className="text-sm text-gray-500">
-          Total Runs: <span className="font-semibold">{runs.length}</span>
-        </p>
+      <div className="mt-4 rounded-xl bg-white px-6 py-4 shadow">
+        <p className="text-sm text-gray-500">Total Runs: {runs.length}</p>
       </div>
     </div>
   );
