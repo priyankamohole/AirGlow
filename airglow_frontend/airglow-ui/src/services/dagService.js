@@ -24,6 +24,11 @@ const dagService = {
   runDag(id) {
     return api.post(`/dags/${id}/run`);
   },
+
+  // Returns a blob response for file download
+  downloadDag(id) {
+    return api.get(`/dags/${id}/download`, { responseType: "blob" });
+  },
 };
 
 export default dagService;
