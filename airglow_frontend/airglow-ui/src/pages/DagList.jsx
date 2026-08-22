@@ -17,11 +17,11 @@ export default function DagList() {
   const [status, setStatus] = useState("");
 
   const filtered = dags.filter((dag) => {
-    const matchesSearch = dag.name.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = dag.dag_name
+      .toLowerCase()
+      .includes(search.toLowerCase());
 
-    const matchesStatus = status === "" || dag.status === status;
-
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   const handleDelete = async (id) => {

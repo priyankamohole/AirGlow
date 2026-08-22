@@ -54,9 +54,10 @@ export default function DagDetails() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">{dag.name}</h1>
+          {/* Backend returns dag_name, not name */}
+          <h1 className="text-3xl font-bold">{dag.dag_name}</h1>
 
-          <p className="text-gray-500 mt-1">{dag.description}</p>
+          <p className="text-gray-500 mt-1">{dag.dag_type}</p>
         </div>
 
         <div className="space-x-3">
@@ -68,7 +69,7 @@ export default function DagDetails() {
           </button>
 
           <button
-            onClick={() => navigate(`/pipelines/edit/${dag.id}`)}
+            onClick={() => navigate(`/dags/edit/${dag.id}`)}
             className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
           >
             Edit
@@ -92,44 +93,44 @@ export default function DagDetails() {
               <tr className="border-b">
                 <td className="py-3 font-semibold">Name</td>
 
-                <td>{dag.name}</td>
+                <td>{dag.dag_name}</td>
               </tr>
 
               <tr className="border-b">
                 <td className="py-3 font-semibold">Type</td>
 
-                <td>{dag.pipeline_type}</td>
+                <td>{dag.dag_type}</td>
               </tr>
 
               <tr className="border-b">
-                <td className="py-3 font-semibold">Source</td>
+                <td className="py-3 font-semibold">Scheduler</td>
 
-                <td>{dag.source}</td>
+                <td>{dag.scheduler_type}</td>
               </tr>
 
               <tr className="border-b">
-                <td className="py-3 font-semibold">Destination</td>
+                <td className="py-3 font-semibold">Cron</td>
 
-                <td>{dag.destination}</td>
+                <td>{dag.cron_expression || "—"}</td>
               </tr>
 
               <tr className="border-b">
-                <td className="py-3 font-semibold">Schedule</td>
+                <td className="py-3 font-semibold">Source Config</td>
 
-                <td>{dag.schedule}</td>
+                <td className="truncate max-w-xs">
+                  {dag.source_config
+                    ? JSON.stringify(dag.source_config)
+                    : "—"}
+                </td>
               </tr>
 
               <tr className="border-b">
-                <td className="py-3 font-semibold">Status</td>
+                <td className="py-3 font-semibold">Destination Config</td>
 
-                <td>
-                  <span
-                    className={`px-3 py-1 rounded-full text-white ${
-                      dag.status === "Active" ? "bg-green-600" : "bg-red-600"
-                    }`}
-                  >
-                    {dag.status}
-                  </span>
+                <td className="truncate max-w-xs">
+                  {dag.destination_config
+                    ? JSON.stringify(dag.destination_config)
+                    : "—"}
                 </td>
               </tr>
 
@@ -161,7 +162,7 @@ export default function DagDetails() {
                   <div>
                     <h3 className="font-semibold">Run #{run.id}</h3>
 
-                    <p className="text-sm text-gray-500">{run.started_at}</p>
+                    <p className="text-sm text-gray-500">{run.start_time}</p>
                   </div>
 
                   <span
@@ -192,3 +193,4 @@ export default function DagDetails() {
     </div>
   );
 }
+

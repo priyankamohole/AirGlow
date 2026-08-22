@@ -1,5 +1,5 @@
 import { createContext, useState } from "react";
-import api from "../utils/axios";
+import authApi from "../utils/authAxios";
 
 export const AuthContext = createContext();
 
@@ -7,11 +7,11 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
 
   const login = async (credentials) => {
-    const response = await api.post("/auth/login", credentials);
+    // authApi baseURL is http://localhost/auth — so /login → http://localhost/auth/login ✓
+    const response = await authApi.post("/login", credentials);
 
     const jwt = response.data.access_token;
 
-    // Save the JWT, not the old state
     localStorage.setItem("token", jwt);
     setToken(jwt);
 

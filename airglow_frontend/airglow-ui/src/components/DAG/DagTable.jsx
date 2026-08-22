@@ -27,11 +27,9 @@ export default function DagTable({ dags, onDelete, onRun }) {
           <tr>
             <th className="text-left px-6 py-4">Name</th>
 
-            <th className="text-left px-6 py-4">Description</th>
+            <th className="text-left px-6 py-4">Type</th>
 
-            <th className="text-left px-6 py-4">Schedule</th>
-
-            <th className="text-left px-6 py-4">Status</th>
+            <th className="text-left px-6 py-4">Scheduler</th>
 
             <th className="text-left px-6 py-4">Created</th>
 
@@ -42,20 +40,13 @@ export default function DagTable({ dags, onDelete, onRun }) {
         <tbody>
           {dags.map((dag) => (
             <tr key={dag.id} className="border-b hover:bg-gray-50 transition">
-              <td className="px-6 py-4 font-semibold">{dag.name}</td>
+              <td className="px-6 py-4 font-semibold">{dag.dag_name}</td>
 
-              <td className="px-6 py-4 text-gray-600">{dag.description}</td>
-
-              <td className="px-6 py-4">{dag.schedule}</td>
+              <td className="px-6 py-4 text-gray-600">{dag.dag_type}</td>
 
               <td className="px-6 py-4">
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(
-                    dag.status,
-                  )}`}
-                >
-                  {dag.status}
-                </span>
+                {dag.scheduler_type}
+                {dag.cron_expression ? ` (${dag.cron_expression})` : ""}
               </td>
 
               <td className="px-6 py-4">

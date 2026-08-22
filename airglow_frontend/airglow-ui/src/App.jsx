@@ -8,6 +8,8 @@ import DagList from "./pages/DagList";
 import CreateDag from "./pages/CreateDag";
 import EditDag from "./pages/EditDag";
 import DagDetails from "./pages/DagDetails";
+import Runs from "./pages/Runs";
+import RunDetails from "./pages/RunDetails";
 
 function App() {
   return (
@@ -26,6 +28,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/dags"
         element={
@@ -71,11 +74,22 @@ function App() {
       />
 
       <Route
-        path="/dags/:id"
+        path="/runs"
         element={
           <ProtectedRoute>
             <Layout>
-              <DagDetails />
+              <Runs />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/runs/:id"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <RunDetails />
             </Layout>
           </ProtectedRoute>
         }
@@ -85,3 +99,4 @@ function App() {
 }
 
 export default App;
+

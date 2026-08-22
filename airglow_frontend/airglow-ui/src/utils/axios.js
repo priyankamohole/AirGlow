@@ -1,19 +1,16 @@
 import axios from "axios";
 
+// General API client — routes through nginx to DAG / dashboard / run services
 const api = axios.create({
-  baseURL: "http://localhost/auth",
+  baseURL: "http://localhost",
 });
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 
-  // console.log("TOKEN:", token);
-
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-
-  // console.log("REQUEST HEADERS:", config.headers);
 
   return config;
 });

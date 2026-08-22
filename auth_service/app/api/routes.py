@@ -282,7 +282,7 @@ async def auth_github(
 
     jwt_token = create_access_token(
         {
-            "sub": user.username
+            "sub": str(user.id)
         }
     )
 

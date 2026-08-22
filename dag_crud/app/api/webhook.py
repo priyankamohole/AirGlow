@@ -1,9 +1,10 @@
-from fastapi import APIRouter , Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.dependencies import get_db
 from app.models.webhook import Webhook
 from app.schemas.webhook import WebhookCreate, WebhookResponse
+from app.core.auth import get_current_user
 
 router = APIRouter(
     prefix="/webhooks",
@@ -11,13 +12,14 @@ router = APIRouter(
 )
 
 
-@router.post("",response_model=WebhookResponse)
+@router.post("", response_model=WebhookResponse)
 def create_webhook(
-    webhook:WebhookCreate,
-    db:Session = Depends(get_db)
+    webhook: WebhookCreate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    new_webhook=  Webhook(
-        dag_id= webhook.dag_id,
+    new_webhook = Webhook(
+        dag_id=webhook.dag_id,
         callback_url=webhook.callback_url
     )
     db.add(new_webhook)
@@ -27,27 +29,30 @@ def create_webhook(
     return new_webhook
 
 
-@router.get("",response_model=list[WebhookResponse])
-def get_webhooks(db:Session=Depends(get_db)):
+@router.get("", response_model=list[WebhookResponse])
+def get_webhooks(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     return db.query(Webhook).all()
 
 
 @router.delete("/{webhook_id}")
-def delete_webhook(webhook_id:int,
-                   db:Session=Depends(get_db)):
-    
+def delete_webhook(
+    webhook_id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     webhook = (
         db.query(Webhook).filter(Webhook.id == webhook_id).first()
     )
 
-    if not webhook: 
+    if not webhook:
         raise HTTPException(
             status_code=404, detail="Webhook not found"
         )
-    
+
     db.delete(webhook)
     db.commit()
 
-    return{
-        "message": "Webhook deleted successfully"
-    }
+    return {"message": "Webhook deleted successfully"}

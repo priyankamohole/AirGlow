@@ -5,59 +5,21 @@ import RecentDags from "../components/Dashboard/RecentDags";
 import QuickActions from "../components/Dashboard/QuickAction";
 import RunsChart from "../components/Dashboard/RunsChart";
 import StatusPieChart from "../components/Dashboard/StatusPieChart";
-// import { getDashboard } from "../services/dashboardService";
+import Loader from "../components/Loader";
+import { getDashboardStats, getRecentRuns, getRecentDags } from "../services/dashboardService";
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
-    totalDags: 12,
-    totalRuns: 56,
-    successRuns: 49,
-    failedRuns: 7,
-    outputFiles: 44,
-    webhooks: 5,
+    total_dags: 0,
+    total_runs: 0,
+    successful_runs: 0,
+    failed_runs: 0,
+    files_generated: 0,
   });
 
-  const [recentRuns, setRecentRuns] = useState([
-    {
-      id: 1,
-      dag: "Customer ETL",
-      status: "Success",
-      time: "10:20 AM",
-      duration: "4 sec",
-    },
-    {
-      id: 2,
-      dag: "Sales Pipeline",
-      status: "Failed",
-      time: "09:45 AM",
-      duration: "2 sec",
-    },
-    {
-      id: 3,
-      dag: "Weather Batch",
-      status: "Running",
-      time: "09:10 AM",
-      duration: "-",
-    },
-  ]);
-
-  const [recentDags, setRecentDags] = useState([
-    {
-      id: 1,
-      name: "Customer ETL",
-      type: "ETL",
-    },
-    {
-      id: 2,
-      name: "Weather Batch",
-      type: "Batch",
-    },
-    {
-      id: 3,
-      name: "Sales ELT",
-      type: "ELT",
-    },
-  ]);
+  const [recentRuns, setRecentRuns] = useState([]);
+  const [recentDags, setRecentDags] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadDashboard();
@@ -65,21 +27,24 @@ export default function Dashboard() {
 
   const loadDashboard = async () => {
     try {
-      // Later connect backend
+      const [statsRes, runsRes, dagsRes] = await Promise.all([
+        getDashboardStats(),
+        getRecentRuns(),
+        getRecentDags(),
+      ]);
 
-      /*
-      const res = await getDashboard();
-
-      setStats(res.data.stats);
-      setRecentRuns(res.data.recent_runs);
-      setRecentDags(res.data.recent_dags);
-      */
-
-      console.log("Dashboard Loaded");
+      setStats(statsRes.data);
+      // Show only the 5 most recent runs/dags
+      setRecentRuns((runsRes.data || []).slice(0, 5));
+      setRecentDags((dagsRes.data || []).slice(0, 5));
     } catch (err) {
-      console.log(err);
+      console.error("Dashboard load error:", err);
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (loading) return <Loader text="Loading Dashboard..." />;
 
   return (
     <div className="space-y-8">
@@ -104,38 +69,32 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatsCard
           title="Total DAGs"
-          value={stats.totalDags}
+          value={stats.total_dags}
           color="bg-blue-500"
         />
 
         <StatsCard
           title="Total Runs"
-          value={stats.totalRuns}
+          value={stats.total_runs}
           color="bg-indigo-500"
         />
 
         <StatsCard
           title="Successful Runs"
-          value={stats.successRuns}
+          value={stats.successful_runs}
           color="bg-green-500"
         />
 
         <StatsCard
           title="Failed Runs"
-          value={stats.failedRuns}
+          value={stats.failed_runs}
           color="bg-red-500"
         />
 
         <StatsCard
           title="Output Files"
-          value={stats.outputFiles}
+          value={stats.files_generated}
           color="bg-yellow-500"
-        />
-
-        <StatsCard
-          title="Webhooks"
-          value={stats.webhooks}
-          color="bg-purple-500"
         />
       </div>
 
@@ -157,3 +116,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

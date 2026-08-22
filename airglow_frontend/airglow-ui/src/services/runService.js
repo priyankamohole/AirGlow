@@ -1,15 +1,14 @@
 import api from "../utils/axios";
 
 const runService = {
-  getRuns: () => api.get("/runs"),
+  // Backend: GET /dags/runs (run.py router prefix is /dags)
+  getRuns: () => api.get("/dags/runs"),
 
-  getRun: (id) => api.get(`/runs/${id}`),
+  // Backend: GET /dags/runs/{id}
+  getRun: (id) => api.get(`/dags/runs/${id}`),
 
+  // Backend: POST /dags/{dagId}/run
   triggerRun: (dagId) => api.post(`/dags/${dagId}/run`),
-
-  getLogs: (id) => api.get(`/runs/${id}/logs`),
-
-  getOutputs: (id) => api.get(`/runs/${id}/outputs`),
 };
 
 export default runService;

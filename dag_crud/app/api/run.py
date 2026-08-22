@@ -31,9 +31,13 @@ def run_pipeline(
     }
 
 @router.get("/runs")
-def get_runs(db: Session = Depends(get_db)):
+def get_runs(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     runs = (
         db.query(DAGRun)
+        .filter(DAGRun.user_id == current_user["sub"])
         .order_by(DAGRun.id.desc())
         .all()
     )
@@ -55,8 +59,19 @@ def get_runs(db: Session = Depends(get_db)):
     ]
 
 @router.get("/runs/{run_id}")
-def get_run(run_id: int, db: Session = Depends(get_db)):
-    run = db.query(DAGRun).filter(DAGRun.id == run_id).first()
+def get_run(
+    run_id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    run = (
+        db.query(DAGRun)
+        .filter(
+            DAGRun.id == run_id,
+            DAGRun.user_id == current_user["sub"],
+        )
+        .first()
+    )
 
     if not run:
         raise HTTPException(status_code=404, detail="Run not found")
@@ -64,7 +79,7 @@ def get_run(run_id: int, db: Session = Depends(get_db)):
     return {
         "id": run.id,
         "dag_id": run.dag_id,
-        "dag_name": run.dag.dag_name,
+        "dag_name": run.dag.dag_name if run.dag else None,
         "status": run.status,
         "start_time": run.start_time,
         "end_time": run.end_time,
@@ -74,4 +89,5 @@ def get_run(run_id: int, db: Session = Depends(get_db)):
         "records_loaded": run.records_loaded,
         "logs": run.log,
     }
+
 
